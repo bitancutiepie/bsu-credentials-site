@@ -4,8 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Classmate Credentials</title>
-  <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -179,7 +178,8 @@
     <button class="copy-btn" onclick="closePopup()">Close</button>
   </div>
 
- <script type="module">
+
+<script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
@@ -200,8 +200,8 @@
     const userList = document.getElementById('userList');
     userList.innerHTML = '';
     const q = query(collection(db, "credentials"), orderBy("timestamp", "desc"));
-    const querySnapshot = await getDocs(q);
-    querySnapshot.forEach((doc) => {
+    const snapshot = await getDocs(q);
+    snapshot.forEach(doc => {
       const user = doc.data();
       const div = document.createElement('div');
       div.className = 'user';
@@ -211,24 +211,21 @@
     });
   }
 
-  document.querySelector("form.add-user-form").addEventListener("submit", async (event) => {
+  document.querySelector(".add-user-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     const name = document.getElementById('newName').value;
     const sr = document.getElementById('newSR').value;
     const pass = document.getElementById('newPass').value;
 
-    try {
-      await addDoc(collection(db, "credentials"), {
-        name: name,
-        sr: sr,
-        pass: pass,
-        timestamp: serverTimestamp()
-      });
-      alert("Credential submitted!");
-      event.target.reset();
-    } catch (e) {
-      alert("Error saving: " + e.message);
-    }
+    await addDoc(collection(db, "credentials"), {
+      name,
+      sr,
+      pass,
+      timestamp: serverTimestamp()
+    });
+
+    alert("Credential submitted!");
+    event.target.reset();
   });
 
   window.verifyAdmin = () => {
@@ -263,6 +260,7 @@
     });
   };
 </script>
+
 
 </body>
 </html>
