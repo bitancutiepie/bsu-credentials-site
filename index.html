@@ -179,10 +179,12 @@
   </div>
 
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
+<!-- Firebase SDKs (compat version for HTML) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
+<script>
+  // Firebase Config
   const firebaseConfig = {
     apiKey: "AIzaSyBOVrCDsGgQtLzgZrtPmY84aKh59p5T_ts",
     authDomain: "bsu-credentials-site.firebaseapp.com",
@@ -193,42 +195,26 @@
     measurementId: "G-GMFKPCDTC7"
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-  async function renderUsers() {
+  function renderUsers() {
     const userList = document.getElementById('userList');
     userList.innerHTML = '';
-    const q = query(collection(db, "credentials"), orderBy("timestamp", "desc"));
-    const snapshot = await getDocs(q);
-    snapshot.forEach(doc => {
-      const user = doc.data();
-      const div = document.createElement('div');
-      div.className = 'user';
-      div.textContent = user.name.toUpperCase();
-      div.onclick = () => showPopup(user);
-      userList.appendChild(div);
+    db.collection("credentials").orderBy("timestamp", "desc").get().then(snapshot => {
+      snapshot.forEach(doc => {
+        const user = doc.data();
+        const div = document.createElement('div');
+        div.className = 'user';
+        div.textContent = user.name.toUpperCase();
+        div.onclick = () => showPopup(user);
+        userList.appendChild(div);
+      });
     });
   }
 
-  document.querySelector(".add-user-form").addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const name = document.getElementById('newName').value;
-    const sr = document.getElementById('newSR').value;
-    const pass = document.getElementById('newPass').value;
-
-    await addDoc(collection(db, "credentials"), {
-      name,
-      sr,
-      pass,
-      timestamp: serverTimestamp()
-    });
-
-    alert("Credential submitted!");
-    event.target.reset();
-  });
-
-  window.verifyAdmin = () => {
+  function verifyAdmin() {
     const inputPass = document.getElementById('adminPassword').value;
     if (inputPass === 'admin123') {
       document.getElementById('userList').style.display = 'grid';
@@ -236,29 +222,52 @@
     } else {
       alert('Wrong password!');
     }
-  };
+  }
 
-  window.showPopup = (user) => {
+  function showPopup(user) {
     document.getElementById('popupName').textContent = user.name;
     document.getElementById('popupSR').textContent = user.sr;
     document.getElementById('popupPass').textContent = user.pass;
     document.getElementById('overlay').style.display = 'block';
     document.getElementById('popup').style.display = 'block';
-  };
+  }
 
-  window.closePopup = () => {
+  function closePopup() {
     document.getElementById('overlay').style.display = 'none';
     document.getElementById('popup').style.display = 'none';
-  };
+  }
 
-  window.copyBoth = () => {
+  function copyBoth() {
     const sr = document.getElementById('popupSR').textContent;
     const pass = document.getElementById('popupPass').textContent;
     const combined = `SR Code: ${sr}\nPassword: ${pass}`;
     navigator.clipboard.writeText(combined).then(() => {
       alert('Credentials copied to clipboard!');
     });
-  };
+  }
+
+  function addUser(event) {
+    event.preventDefault();
+    const name = document.getElementById('newName').value;
+    const sr = document.getElementById('newSR').value;
+    const pass = document.getElementById('newPass').value;
+
+    db.collection("credentials").add({
+      name: name,
+      sr: sr,
+      pass: pass,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    })
+    .then(() => {
+      alert("Credential submitted!");
+      event.target.reset();
+    })
+    .catch((error) => {
+      alert("Error saving: " + error);
+    });
+  }
+
+  document.querySelector(".add-user-form").addEventListener("submit", addUser);
 </script>
 
 
