@@ -179,87 +179,90 @@
     <button class="copy-btn" onclick="closePopup()">Close</button>
   </div>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBOVrCDsGgQtLzgZrtPmY84aKh59p5T_ts",
-      authDomain: "bsu-credentials-site.firebaseapp.com",
-      projectId: "bsu-credentials-site",
-      storageBucket: "bsu-credentials-site.appspot.com",
-      messagingSenderId: "738269737080",
-      appId: "1:738269737080:web:0cd4496eef414861a0bd8d",
-      measurementId: "G-GMFKPCDTC7"
-    };
+ <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js";
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+  const firebaseConfig = {
+    apiKey: "AIzaSyBOVrCDsGgQtLzgZrtPmY84aKh59p5T_ts",
+    authDomain: "bsu-credentials-site.firebaseapp.com",
+    projectId: "bsu-credentials-site",
+    storageBucket: "bsu-credentials-site.appspot.com",
+    messagingSenderId: "738269737080",
+    appId: "1:738269737080:web:0cd4496eef414861a0bd8d",
+    measurementId: "G-GMFKPCDTC7"
+  };
 
-    function renderUsers() {
-      const userList = document.getElementById('userList');
-      userList.innerHTML = '';
-      db.collection("credentials").orderBy("timestamp", "desc").get().then(snapshot => {
-        snapshot.forEach(doc => {
-          const user = doc.data();
-          const div = document.createElement('div');
-          div.className = 'user';
-          div.textContent = user.name.toUpperCase();
-          div.onclick = () => showPopup(user);
-          userList.appendChild(div);
-        });
-      });
-    }
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-    function verifyAdmin() {
-      const inputPass = document.getElementById('adminPassword').value;
-      if (inputPass === 'admin123') {
-        document.getElementById('userList').style.display = 'grid';
-        renderUsers();
-      } else {
-        alert('Wrong password!');
-      }
-    }
+  async function renderUsers() {
+    const userList = document.getElementById('userList');
+    userList.innerHTML = '';
+    const q = query(collection(db, "credentials"), orderBy("timestamp", "desc"));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((doc) => {
+      const user = doc.data();
+      const div = document.createElement('div');
+      div.className = 'user';
+      div.textContent = user.name.toUpperCase();
+      div.onclick = () => showPopup(user);
+      userList.appendChild(div);
+    });
+  }
 
-    function showPopup(user) {
-      document.getElementById('popupName').textContent = user.name;
-      document.getElementById('popupSR').textContent = user.sr;
-      document.getElementById('popupPass').textContent = user.pass;
-      document.getElementById('overlay').style.display = 'block';
-      document.getElementById('popup').style.display = 'block';
-    }
+  document.querySelector("form.add-user-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const name = document.getElementById('newName').value;
+    const sr = document.getElementById('newSR').value;
+    const pass = document.getElementById('newPass').value;
 
-    function closePopup() {
-      document.getElementById('overlay').style.display = 'none';
-      document.getElementById('popup').style.display = 'none';
-    }
-
-    function copyBoth() {
-      const sr = document.getElementById('popupSR').textContent;
-      const pass = document.getElementById('popupPass').textContent;
-      const combined = `SR Code: ${sr}\nPassword: ${pass}`;
-      navigator.clipboard.writeText(combined).then(() => {
-        alert('Credentials copied to clipboard!');
-      });
-    }
-
-    function addUser(event) {
-      event.preventDefault();
-      const name = document.getElementById('newName').value;
-      const sr = document.getElementById('newSR').value;
-      const pass = document.getElementById('newPass').value;
-
-      db.collection("credentials").add({
+    try {
+      await addDoc(collection(db, "credentials"), {
         name: name,
         sr: sr,
         pass: pass,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      })
-      .then(() => {
-        alert("Credential submitted!");
-        event.target.reset();
-      })
-      .catch((error) => {
-        alert("Error saving: " + error);
+        timestamp: serverTimestamp()
       });
+      alert("Credential submitted!");
+      event.target.reset();
+    } catch (e) {
+      alert("Error saving: " + e.message);
     }
-  </script>
+  });
+
+  window.verifyAdmin = () => {
+    const inputPass = document.getElementById('adminPassword').value;
+    if (inputPass === 'admin123') {
+      document.getElementById('userList').style.display = 'grid';
+      renderUsers();
+    } else {
+      alert('Wrong password!');
+    }
+  };
+
+  window.showPopup = (user) => {
+    document.getElementById('popupName').textContent = user.name;
+    document.getElementById('popupSR').textContent = user.sr;
+    document.getElementById('popupPass').textContent = user.pass;
+    document.getElementById('overlay').style.display = 'block';
+    document.getElementById('popup').style.display = 'block';
+  };
+
+  window.closePopup = () => {
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('popup').style.display = 'none';
+  };
+
+  window.copyBoth = () => {
+    const sr = document.getElementById('popupSR').textContent;
+    const pass = document.getElementById('popupPass').textContent;
+    const combined = `SR Code: ${sr}\nPassword: ${pass}`;
+    navigator.clipboard.writeText(combined).then(() => {
+      alert('Credentials copied to clipboard!');
+    });
+  };
+</script>
+
 </body>
 </html>
