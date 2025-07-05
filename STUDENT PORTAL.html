@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Classmate Credentials</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: url('bsu.jpg') no-repeat center center fixed;
+      background-size: cover;
+      margin: 0;
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      animation: fadeIn 2s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    h1 {
+      text-align: center;
+      text-shadow: 1px 1px 5px rgba(0,0,0,0.8);
+      margin-bottom: 20px;
+      font-size: 3rem;
+      font-weight: bold;
+    }
+
+    .user-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      max-width: 800px;
+      width: 100%;
+    }
+
+    .user {
+      background: linear-gradient(to right, #ff6a6a, #ff4c4c);
+      color: white;
+      font-weight: bold;
+      text-transform: uppercase;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s, background-color 0.2s;
+      position: relative;
+    }
+
+    .user:hover {
+      background-color: #e0f7fa;
+      transform: scale(1.05);
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: 4px;
+      right: 6px;
+      background: rgba(0, 0, 0, 0.4);
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .add-user-form {
+      margin-top: 20px;
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .add-user-form input, .add-user-form button {
+      margin: 5px;
+      padding: 8px;
+      border: none;
+      border-radius: 4px;
+    }
+
+    .add-user-form button {
+      background: linear-gradient(to right, #ff6a6a, #ff4c4c);
+      color: white;
+      font-weight: bold;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      color: black;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      z-index: 1000;
+      width: 90%;
+      max-width: 400px;
+      animation: popupFade 0.3s ease-in-out;
+    }
+
+    @keyframes popupFade {
+      from { opacity: 0; transform: translate(-50%, -60%); }
+      to { opacity: 1; transform: translate(-50%, -50%); }
+    }
+
+    .popup h2 {
+      margin-top: 0;
+      text-align: center;
+    }
+
+    .popup p {
+      word-wrap: break-word;
+    }
+
+    .popup .copy-btn {
+      display: inline-block;
+      margin-top: 10px;
+      background: linear-gradient(to right, #ff6a6a, #ff4c4c);
+      color: white;
+      font-weight: bold;
+      text-transform: uppercase;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+  <h1>SR CODE & PASS</h1>
+  <div class="user-list" id="userList"></div>
+
+  <form class="add-user-form" onsubmit="addUser(event)">
+    <input type="text" id="newName" placeholder="Name" required>
+    <input type="text" id="newSR" placeholder="SR Code" required>
+    <input type="text" id="newPass" placeholder="Password" required>
+    <button type="submit">Add User</button>
+  </form>
+
+  <div class="overlay" id="overlay"></div>
+  <div class="popup" id="popup">
+    <h2 id="popupName"></h2>
+    <p><strong>SR Code:</strong> <span id="popupSR"></span></p>
+    <p><strong>Password:</strong> <span id="popupPass"></span></p>
+    <button class="copy-btn" onclick="copyBoth()">Copy SR Code + Password</button>
+    <button class="copy-btn" onclick="closePopup()">Close</button>
+  </div>
+
+  <script>
+    let users = JSON.parse(localStorage.getItem('users')) || [
+      { name: "jv", sr: "24-02364", pass: "bitancutie" },
+      { name: "adrian", sr: "24-09471", pass: "ziozia_052606" },
+      { name: "nath", sr: "24-05927", pass: "081623" },
+      { name: "jhai", sr: "24-00130", pass: "jvjvjvmg555" },
+      { name: "shawn yash", sr: "24-04128", pass: "shawnkjp1113" },
+      { name: "lance", sr: "24-09355", pass: "Lance282006!" },
+      { name: "sean", sr: "24-07778", pass: "srain08192006" },
+      { name: "shawn pab", sr: "24-08750", pass: "ShawnPabellano#1213" },
+      { name: "patrick", sr: "24-03160", pass: "ace12345" }
+    ];
+
+    const userList = document.getElementById('userList');
+
+    function renderUsers() {
+      userList.innerHTML = '';
+      users.forEach((user, index) => {
+        const div = document.createElement('div');
+        div.className = 'user';
+        div.textContent = user.name.toUpperCase();
+        div.onclick = () => showPopup(user);
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'delete-btn';
+        delBtn.textContent = '×';
+        delBtn.onclick = (e) => {
+          e.stopPropagation();
+          users.splice(index, 1);
+          saveUsers();
+          renderUsers();
+        };
+
+        div.appendChild(delBtn);
+        userList.appendChild(div);
+      });
+    }
+
+    function saveUsers() {
+      localStorage.setItem('users', JSON.stringify(users));
+    }
+
+    function showPopup(user) {
+      document.getElementById('popupName').textContent = user.name;
+      document.getElementById('popupSR').textContent = user.sr;
+      document.getElementById('popupPass').textContent = user.pass;
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('popup').style.display = 'block';
+    }
+
+    function closePopup() {
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('popup').style.display = 'none';
+    }
+
+    function copyBoth() {
+      const sr = document.getElementById('popupSR').textContent;
+      const pass = document.getElementById('popupPass').textContent;
+      const combined = `SR Code: ${sr}\nPassword: ${pass}`;
+      navigator.clipboard.writeText(combined).then(() => {
+        alert('Credentials copied to clipboard!');
+      });
+    }
+
+    function addUser(event) {
+      event.preventDefault();
+      const name = document.getElementById('newName').value;
+      const sr = document.getElementById('newSR').value;
+      const pass = document.getElementById('newPass').value;
+      users.push({ name, sr, pass });
+      saveUsers();
+      renderUsers();
+      event.target.reset();
+    }
+
+    renderUsers();
+  </script>
+</body>
+</html>
