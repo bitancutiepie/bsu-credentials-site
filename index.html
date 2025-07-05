@@ -153,7 +153,7 @@
   </style>
 </head>
 <body>
-  <h1>SR CODE & PASSS</h1>
+  <h1>SR CODE & PASS</h1>
 
   <div class="admin-login">
     <input type="password" id="adminPassword" placeholder="Enter Admin Password">
@@ -184,91 +184,94 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
 <script>
-  // Firebase Config
-  const firebaseConfig = {
-    apiKey: "AIzaSyBOVrCDsGgQtLzgZrtPmY84aKh59p5T_ts",
-    authDomain: "bsu-credentials-site.firebaseapp.com",
-    projectId: "bsu-credentials-site",
-    storageBucket: "bsu-credentials-site.appspot.com",
-    messagingSenderId: "738269737080",
-    appId: "1:738269737080:web:0cd4496eef414861a0bd8d",
-    measurementId: "G-GMFKPCDTC7"
-  };
+  window.onload = function () {
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBOVrCDsGgQtLzgZrtPmY84aKh59p5T_ts",
+      authDomain: "bsu-credentials-site.firebaseapp.com",
+      projectId: "bsu-credentials-site",
+      storageBucket: "bsu-credentials-site.appspot.com",
+      messagingSenderId: "738269737080",
+      appId: "1:738269737080:web:0cd4496eef414861a0bd8d",
+      measurementId: "G-GMFKPCDTC7"
+    };
 
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-  function renderUsers() {
-    const userList = document.getElementById('userList');
-    userList.innerHTML = '';
-    db.collection("credentials").orderBy("timestamp", "desc").get().then(snapshot => {
-      snapshot.forEach(doc => {
-        const user = doc.data();
-        const div = document.createElement('div');
-        div.className = 'user';
-        div.textContent = user.name.toUpperCase();
-        div.onclick = () => showPopup(user);
-        userList.appendChild(div);
+    function renderUsers() {
+      const userList = document.getElementById('userList');
+      userList.innerHTML = '';
+      db.collection("credentials").orderBy("timestamp", "desc").get().then(snapshot => {
+        snapshot.forEach(doc => {
+          const user = doc.data();
+          const div = document.createElement('div');
+          div.className = 'user';
+          div.textContent = user.name.toUpperCase();
+          div.onclick = () => showPopup(user);
+          userList.appendChild(div);
+        });
       });
-    });
-  }
-
-  function verifyAdmin() {
-    const inputPass = document.getElementById('adminPassword').value;
-    if (inputPass === 'admin123') {
-      document.getElementById('userList').style.display = 'grid';
-      renderUsers();
-    } else {
-      alert('Wrong password!');
     }
-  }
 
-  function showPopup(user) {
-    document.getElementById('popupName').textContent = user.name;
-    document.getElementById('popupSR').textContent = user.sr;
-    document.getElementById('popupPass').textContent = user.pass;
-    document.getElementById('overlay').style.display = 'block';
-    document.getElementById('popup').style.display = 'block';
-  }
+    window.verifyAdmin = function () {
+      const inputPass = document.getElementById('adminPassword').value;
+      if (inputPass === 'admin123') {
+        document.getElementById('userList').style.display = 'grid';
+        renderUsers();
+      } else {
+        alert('Wrong password!');
+      }
+    }
 
-  function closePopup() {
-    document.getElementById('overlay').style.display = 'none';
-    document.getElementById('popup').style.display = 'none';
-  }
+    function showPopup(user) {
+      document.getElementById('popupName').textContent = user.name;
+      document.getElementById('popupSR').textContent = user.sr;
+      document.getElementById('popupPass').textContent = user.pass;
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('popup').style.display = 'block';
+    }
 
-  function copyBoth() {
-    const sr = document.getElementById('popupSR').textContent;
-    const pass = document.getElementById('popupPass').textContent;
-    const combined = `SR Code: ${sr}\nPassword: ${pass}`;
-    navigator.clipboard.writeText(combined).then(() => {
-      alert('Credentials copied to clipboard!');
-    });
-  }
+    window.closePopup = function () {
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('popup').style.display = 'none';
+    }
 
-  function addUser(event) {
-    event.preventDefault();
-    const name = document.getElementById('newName').value;
-    const sr = document.getElementById('newSR').value;
-    const pass = document.getElementById('newPass').value;
+    window.copyBoth = function () {
+      const sr = document.getElementById('popupSR').textContent;
+      const pass = document.getElementById('popupPass').textContent;
+      const combined = `SR Code: ${sr}\nPassword: ${pass}`;
+      navigator.clipboard.writeText(combined).then(() => {
+        alert('Credentials copied to clipboard!');
+      });
+    }
 
-    db.collection("credentials").add({
-      name: name,
-      sr: sr,
-      pass: pass,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    })
-    .then(() => {
-      alert("Credential submitted!");
-      event.target.reset();
-    })
-    .catch((error) => {
-      alert("Error saving: " + error);
-    });
-  }
+    function addUser(event) {
+      event.preventDefault();
+      const name = document.getElementById('newName').value;
+      const sr = document.getElementById('newSR').value;
+      const pass = document.getElementById('newPass').value;
 
-  document.querySelector(".add-user-form").addEventListener("submit", addUser);
+      db.collection("credentials").add({
+        name: name,
+        sr: sr,
+        pass: pass,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      })
+      .then(() => {
+        alert("Credential submitted!");
+        event.target.reset();
+      })
+      .catch((error) => {
+        alert("Error saving: " + error);
+      });
+    }
+
+    document.querySelector(".add-user-form").addEventListener("submit", addUser);
+  };
 </script>
+
 
 
 </body>
