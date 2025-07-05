@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Classmate Credentials</title>
   <style>
     body {
@@ -172,7 +172,7 @@
   </div>
 
   <script>
-    let users = JSON.parse(localStorage.getItem('users')) || [
+    let users = [
       { name: "jv", sr: "24-02364", pass: "bitancutie" },
       { name: "adrian", sr: "24-09471", pass: "ziozia_052606" },
       { name: "nath", sr: "24-05927", pass: "081623" },
@@ -181,7 +181,13 @@
       { name: "lance", sr: "24-09355", pass: "Lance282006!" },
       { name: "sean", sr: "24-07778", pass: "srain08192006" },
       { name: "shawn pab", sr: "24-08750", pass: "ShawnPabellano#1213" },
-      { name: "patrick", sr: "24-03160", pass: "ace12345" }
+      { name: "patrick", sr: "24-03160", pass: "ace12345" },
+      { name: "kyla", sr: "24-05644", pass: "kylabels30" },
+      { name: "chynne", sr: "24-00911", pass: "CABV030406" },
+      { name: "kristine", sr: "24-02768", pass: "98765KD" },
+      { name: "leann", sr: "24-01856", pass: "lekitoca" },
+      { name: "riana", sr: "24-08104", pass: "Yangjungwon" },
+      { name: "cj", sr: "24-02986", pass: "CrisED0516!!!" }
     ];
 
     const userList = document.getElementById('userList');
@@ -200,17 +206,12 @@
         delBtn.onclick = (e) => {
           e.stopPropagation();
           users.splice(index, 1);
-          saveUsers();
           renderUsers();
         };
 
         div.appendChild(delBtn);
         userList.appendChild(div);
       });
-    }
-
-    function saveUsers() {
-      localStorage.setItem('users', JSON.stringify(users));
     }
 
     function showPopup(user) {
@@ -241,7 +242,6 @@
       const sr = document.getElementById('newSR').value;
       const pass = document.getElementById('newPass').value;
       users.push({ name, sr, pass });
-      saveUsers();
       renderUsers();
       event.target.reset();
     }
